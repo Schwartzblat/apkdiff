@@ -91,3 +91,16 @@ def get_stripped_ast(class_analysis: ClassAnalysis) -> str:
     ast = class_analysis.get_class().get_ast()
 
     return _strip(ast)
+
+
+def get_strings(class_analysis: ClassAnalysis) -> List[str]:
+    def _get_strings(value: Any) -> List[str]:
+        if isinstance(value, list):
+            if len(value) == 3 and value[0] == 'Literal' and value[2] == ('java/lang/String', 0):
+                return [value[1]]
+            return [string for item in value for string in _get_strings(item)]
+        if isinstance(value, dict):
+            return [item for key in value.keys() for item in _get_strings(value[key])]
+        return []
+
+    return _get_strings(class_analysis.get_class().get_ast())
